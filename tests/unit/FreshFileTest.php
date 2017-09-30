@@ -102,7 +102,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 
     protected function getCacheFilepath()
     {
-        return __DIR__.DIRECTORY_SEPARATOR.'.requtize.fresh-file';
+        return __DIR__.'/cache/.requtize.fresh-file';
     }
 
     protected function getImaginaryFilepath()
@@ -119,5 +119,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
     {
         if(is_file($ff->getCacheFilepath()))
             unlink($ff->getCacheFilepath());
+        if(is_file($this->getCacheFilepath()))
+            unlink($this->getCacheFilepath());
     }
 }
