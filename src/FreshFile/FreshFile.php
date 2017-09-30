@@ -18,20 +18,18 @@ namespace Requtize\FreshFile;
  */
 class FreshFile
 {
-    const CACHE_FILENAME = '.requtize.fresh-file';
-
     protected static $instance;
-    protected $cachePath;
+    protected $cacheFilepath;
     protected $metadata;
 
-    public static function create($cachePath)
+    public static function create($cacheFilepath)
     {
         if(self::$instance)
         {
             return self::$instance;
         }
 
-        return self::$instance = new self($cachePath);
+        return self::$instance = new self($cacheFilepath);
     }
 
     public static function get()
@@ -39,9 +37,9 @@ class FreshFile
         return self::$instance;
     }
 
-    public function __construct($cachePath)
+    public function __construct($cacheFilepath)
     {
-        $this->cachePath = realpath($cachePath ? $cachePath : __DIR__);
+        $this->cacheFilepath = realpath($cacheFilepath ? $cacheFilepath : __DIR__.'.requtize.fresh-file');
     }
 
     public function __destruct()
@@ -125,7 +123,7 @@ class FreshFile
      */
     public function getCacheFilepath()
     {
-        return $this->cachePath.'/'.self::CACHE_FILENAME;
+        return $this->cacheFilepath;
     }
 
     protected function readMetadataFile()
