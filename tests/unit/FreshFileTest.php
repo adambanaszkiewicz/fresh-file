@@ -6,14 +6,17 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 {
     public function testCreateCache()
     {
-        $this->assertEquals(__DIR__.'/.requtize.fresh-file', (new FreshFile(__DIR__))->getCacheFilepath());
-        $this->assertEquals(__DIR__.'/.requtize.fresh-file', FreshFile::get(__DIR__)->getCacheFilepath());
+        $this->assertEquals($this->getCacheFilepath(), (new FreshFile($this->getCacheFilepath()))->getCacheFilepath());
+
+        FreshFile::create($this->getCacheFilepath());
+
+        $this->assertEquals($this->getCacheFilepath(), FreshFile::get()->getCacheFilepath());
     }
 
     public function testReadFileMetadata()
     {
         $imaginaryFile = $this->getImaginaryFilepath();
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->unlinkCacheFile($ff);
 
@@ -27,7 +30,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
     public function testWriteFileMetadata()
     {
         $imaginaryFile = $this->getImaginaryFilepath();
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->unlinkCacheFile($ff);
 
@@ -38,7 +41,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 
         unset($ff);
 
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->assertEquals('11111', $ff->getFilemtimeMetadata($imaginaryFile));
 
@@ -49,7 +52,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
     public function testReadFilemtime()
     {
         $imaginaryFile = $this->getImaginaryFilepath();
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->unlinkCacheFile($ff);
 
@@ -63,7 +66,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $mtime = time();
         touch($imaginaryFile, $mtime);
 
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->assertEquals($mtime, $ff->getFilemtimeCurrent($imaginaryFile));
 
@@ -74,7 +77,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
     public function testIsFresh()
     {
         $imaginaryFile = $this->getImaginaryFilepath();
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->unlinkCacheFile($ff);
 
@@ -88,13 +91,18 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $mtime = time();
         touch($imaginaryFile, $mtime);
 
-        $ff = new FreshFile(__DIR__);
+        $ff = new FreshFile($this->getCacheFilepath());
 
         $this->assertEquals(false, $ff->isFresh($imaginaryFile));
         $this->assertEquals(true, $ff->isFresh($imaginaryFile));
 
         $this->unlinkCacheFile($ff);
         unlink($imaginaryFile);
+    }
+
+    protected function getCacheFilepath()
+    {
+        return __DIR__.DIRECTORY_SEPARATOR.'.requtize.fresh-file';
     }
 
     protected function getImaginaryFilepath()
