@@ -1,0 +1,24 @@
+{
+    "name": "requtize/fresh-file",
+    "type": "library",
+    "description": "Simple, fast, standalone PHP lib, that helps You to define, if any of your files were modified since last time You check - Is this file FRESH?",
+    "keywords": ["cache-control", "fresh", "filemtime", "filesystem", "file-system", "file-manager", "filemanager"],
+    "homepage": "https://github.com/requtize/fresh-file",
+    "license": "MIT",
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "Adam Banaszkiewicz",
+            "homepage": "http://adambanaszkiewicz.pl",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "~5.5 || ^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Requtize\\FreshFile\\": "src/FreshFile/"
+        }
+    }
+}
