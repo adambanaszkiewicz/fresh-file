@@ -1,0 +1,7 @@
+cache
+
+vendor
+composer.phar
+composer.lock
+cache
+*~
