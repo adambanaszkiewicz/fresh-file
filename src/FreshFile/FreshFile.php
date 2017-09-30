@@ -39,7 +39,7 @@ class FreshFile
 
     public function __construct($cacheFilepath)
     {
-        $this->cacheFilepath = realpath($cacheFilepath ? $cacheFilepath : __DIR__.'.requtize.fresh-file');
+        $this->cacheFilepath = $cacheFilepath ? $cacheFilepath : __DIR__.'/.requtize.fresh-file';
     }
 
     public function __destruct()
