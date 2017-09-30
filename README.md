@@ -3,15 +3,15 @@ Simple, fast, standalone PHP lib, that helps You to define, if any of your files
 
 Script uses **filemtime()** function (with optional **clearstatcache()**) to get last modification time of file. All modification times are stored in one cache file (if You use multiple instances, multiple files will be created), so even when you use this library for houndreds of files, it will store their times in one file, and read&write will be done one time per request.
 
-## Usage
+# Usage
 
-You can create many instances as You want, or create one, and use it as dummy-singleton accessed by static method of class. As argument You must pass a valid cache directory path, where script can place it's metadata cache file.
+You can create many instances as You want, or create one, and use it as dummy-singleton accessed by static method of class. As argument You must pass a valid cache filepath, where script can place it's metadata cache.
 
 ```php
 // Create by object
-$ff = new FreshFile($cacheDirectory);
+$ff = new FreshFile($cacheFilepath);
 // Create using factory
-$ff = FreshFile::create($cacheDirectory);
+$ff = FreshFile::create($cacheFilepath);
 ```
 Once created You can use Your object anywhere You pass it, or get the existend object from static call.
 ```php
