@@ -24,7 +24,7 @@ class FreshFile
     protected $cachePath;
     protected $metadata;
 
-    public static function get($cachePath)
+    public static function create($cachePath)
     {
         if(self::$instance)
         {
@@ -32,6 +32,11 @@ class FreshFile
         }
 
         return self::$instance = new self($cachePath);
+    }
+
+    public static function get()
+    {
+        return self::$instance;
     }
 
     public function __construct($cachePath)
