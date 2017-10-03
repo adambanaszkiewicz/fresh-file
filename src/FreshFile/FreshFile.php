@@ -133,7 +133,7 @@ class FreshFile
 
     protected function readMetadataFile()
     {
-        if($this->metadata === null)
+        if($this->metadata === null && is_file($this->getCacheFilepath()))
         {
             $this->metadata = unserialize(file_get_contents($this->getCacheFilepath()));
         }
