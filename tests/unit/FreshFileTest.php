@@ -93,8 +93,51 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 
         $ff = new FreshFile($this->getCacheFilepath());
 
-        $this->assertEquals(false, $ff->isFresh($imaginaryFile));
-        $this->assertEquals(true, $ff->isFresh($imaginaryFile));
+        $this->assertTrue($ff->isFresh($imaginaryFile));
+        $this->assertFalse($ff->isFresh($imaginaryFile));
+
+        $this->unlinkCacheFile($ff);
+        unlink($imaginaryFile);
+    }
+
+    public function testStoreRelatedFiles()
+    {
+        $imaginaryFile = $this->getImaginaryFilepath();
+        $ff = new FreshFile($this->getCacheFilepath());
+        file_put_contents($imaginaryFile, 'test');
+
+        $relatedFiles = [];
+
+        for($i = 0; $i < 5; $i++)
+        {
+            $relatedFiles[] = $imaginaryFile.'-'.$i;
+            file_put_contents($imaginaryFile.'-'.$i, 'data-'.$i);
+        }
+
+        $ff->setRelatedFiles($imaginaryFile, $relatedFiles);
+        $ff->writeMetadataFile();
+
+        // First call sets filemtimes, we do not want to assert this.
+        $ff->isFresh($imaginaryFile);
+
+        // Now this should returns true - all related files are fresh.
+        $this->assertFalse($ff->isFresh($imaginaryFile));
+
+        // Touch main file should returns true
+        touch($imaginaryFile, time() + 10);
+        $this->assertTrue($ff->isFresh($imaginaryFile));
+        $this->assertFalse($ff->isFresh($imaginaryFile));
+
+        // Touch of any related file also should returns true
+        touch($relatedFiles[1], time() + 10);
+        $this->assertTrue($ff->isFresh($imaginaryFile));
+        $this->assertFalse($ff->isFresh($imaginaryFile));
+
+        $this->assertEquals($relatedFiles, $ff->getRelatedFiles($imaginaryFile));
+
+        foreach($relatedFiles as $file)
+            if(is_file($file))
+                unlink($file);
 
         $this->unlinkCacheFile($ff);
         unlink($imaginaryFile);
@@ -112,7 +155,10 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 
     protected function getImaginaryFileMetadata()
     {
-        return [ $this->getImaginaryFilepath() => '11111' ];
+        return [ $this->getImaginaryFilepath() => [
+            'mt'  => '11111',
+            'rel' => []
+        ]];
     }
 
     protected function unlinkCacheFile(FreshFile $ff)

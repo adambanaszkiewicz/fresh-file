@@ -1,7 +1,7 @@
 # FreshFile
 Simple, fast, standalone PHP lib, that helps You to define, if any of your files were modified since last time You check - Is this file FRESH?
 
-Script uses **filemtime()** function (with optional **clearstatcache()**) to get last modification time of file. All modification times are stored in one cache file (if You use multiple instances, multiple files will be created), so even when you use this library for houndreds of files, it will store their times in one file, and read&write will be done one time per request.
+Script uses **filemtime()** function (with optional **clearstatcache()**) to get last modification time of file. All modification times are stored in one cache file (if You use multiple instances, multiple files will be created), so even when you use this library for houndreds of files, it will store their times in one file, and read&write of cache file will be done one time per request.
 
 # Usage
 
@@ -22,22 +22,46 @@ In first solution You must pass this object anywhere You want use it. In second 
 
 ### Use case
 
-You can check one or many files at one time. If You pass array of filepaths, and any of files will not be fresh (even 1 from 100), method returns false - which means file is not fresh and need to be updated.
+You can check one or many files at one time. If You pass array of filepaths, and any of files will not be fresh (even 1 from 100), method returns true - which means file is fresh and some operations with this file need to be done.
 ```php
 // One file
-if($ff->isFresh($file) === false)
+if($ff->isFresh($file))
     // Do something...
     
 // Many files
-if($ff->isFresh([ $file1, $file2, $file3 ]) === false)
+if($ff->isFresh([ $file1, $file2, $file3 ]))
     // Do something...
 ```
 
-If You check if the file is fresh, script automatically updates metadata for this file, and next time You ask object if the same file is fresh, script teturns true - that means this file is fresh. **Even when you call again line by line in the same script/request!!**
+If You check if the file is fresh, script automatically updates metadata for this file, and next time You ask object if the same file is fresh, script returns false - that means this file do not need to be updated. **Even when you call again line by line in the same script/request!!**
 ```php
-var_dump($ff->isFresh($file)); // returns false
-var_dump($ff->isFresh($file)); // returns true !!!
-var_dump($ff->isFresh($file)); // returns true !!!
+var_dump($ff->isFresh($file)); // returns true
+var_dump($ff->isFresh($file)); // returns false !!!
+var_dump($ff->isFresh($file)); // returns false !!!
+```
+
+### Related files
+
+You can define related files of one main file. This is usefull when You compile LESS or SCSS files with imports, create imports in configuration files, etc. Once passed related files, script will check also if these related files are fresh. If main file or any of related files will change, You will be noticed.
+
+```php
+$ff->setRelatedFiles($file, $relatedFiles);
+$ff->isFresh($file);
+```
+
+You can also set related files, after first fresh-check. This can be usefull when You detect, if any of these files was modified, and You want to update related files for this file.
+
+```php
+if($ff->isFresh($file))
+{
+    // Do something with Config, LESS, SCSS...
+    
+    // After compiling files in library, You can get imported files from library, and set
+    // them into FreshFile object. Next time these files will also be checked if were modified.
+    // FreshFile remember related files between requests.
+    $relatedFiles = $object->getImportedFiles();
+    $ff->setRelatedFiles($file, $relatedFiles);
+}
 ```
 
 # Licence

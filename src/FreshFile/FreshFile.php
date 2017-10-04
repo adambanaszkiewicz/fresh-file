@@ -39,7 +39,7 @@ class FreshFile
 
     public function __construct($cacheFilepath)
     {
-        $this->cacheFilepath = $cacheFilepath ? $cacheFilepath : __DIR__.'/cache/.requtize.fresh-file';
+        $this->cacheFilepath = $cacheFilepath;
 
         $dir = pathinfo($this->cacheFilepath, PATHINFO_DIRNAME);
 
@@ -75,23 +75,36 @@ class FreshFile
             $files = [ $files ];
         }
 
-        $allFresh = true;
+        $related = [];
+
+        foreach($files as $file)
+        {
+            $related = array_merge($related, $this->getRelatedFiles($file));
+        }
+
+        $files = array_unique(array_merge($files, $related));
+
+        $anyIsFresh = false;
 
         foreach($files as $file)
         {
             if($clearstatcache)
+            {
                 clearstatcache(false, $file);
+            }
 
             $ct = $this->getFilemtimeCurrent($file);
             $mt = $this->getFilemtimeMetadata($file);
 
             if($ct > $mt)
-                $allFresh = false;
+            {
+                $anyIsFresh = true;
+            }
 
-            $this->metadata[$file] = $ct;
+            $this->setFilemtime($file, $ct);
         }
 
-        return $allFresh;
+        return $anyIsFresh;
     }
 
     /**
@@ -115,11 +128,50 @@ class FreshFile
      * @return int If returns 0 (zero) that means there is
      *             no info about this file in metadata yet.
      */
-    public function getFilemtimeMetadata($file)
+    public function getFilemtimeMetadata($file, $default = 0)
     {
         $this->readMetadataFile();
 
-        return isset($this->metadata[$file]) ? $this->metadata[$file] : 0;
+        return isset($this->metadata[$file]['mt']) ? $this->metadata[$file]['mt'] : $default;
+    }
+
+    /**
+     * Sets file modification time in metadata.
+     * @param string  $file      Filepath
+     * @param integer $filemtime Modification time in unix timestamp.
+     */
+    public function setFilemtime($file, $filemtime)
+    {
+        $this->readMetadataFile();
+
+        $this->metadata[$file]['mt'] = $filemtime;
+
+        return $this;
+    }
+
+    /**
+     * Sets related $files array for given $file.
+     * @param string $file  Filepath of target relation.
+     * @param array  $files Array of related filepaths.
+     */
+    public function setRelatedFiles($file, $files)
+    {
+        $this->metadata[$file]['rel'] = $files;
+
+        return $this;
+    }
+
+    /**
+     * Returns related $files from given $file.
+     * @param  string $file    Filepath fo target relation.
+     * @param  array  $default Default related files.
+     * @return array           Array of related files saved last time.
+     */
+    public function getRelatedFiles($file, $default = [])
+    {
+        $this->readMetadataFile();
+
+        return isset($this->metadata[$file]['rel']) ? $this->metadata[$file]['rel'] : $default;
     }
 
     /**
@@ -131,19 +183,19 @@ class FreshFile
         return $this->cacheFilepath;
     }
 
+    public function writeMetadataFile()
+    {
+        if(is_array($this->metadata))
+        {
+            file_put_contents($this->getCacheFilepath(), serialize($this->metadata));
+        }
+    }
+
     protected function readMetadataFile()
     {
         if($this->metadata === null && is_file($this->getCacheFilepath()))
         {
             $this->metadata = unserialize(file_get_contents($this->getCacheFilepath()));
-        }
-    }
-
-    protected function writeMetadataFile()
-    {
-        if(is_array($this->metadata))
-        {
-            file_put_contents($this->getCacheFilepath(), serialize($this->metadata));
         }
     }
 }
