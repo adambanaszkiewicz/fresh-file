@@ -20,26 +20,33 @@ class FreshFile
 {
     protected static $instance;
     protected $cacheFilepath;
+    protected $saveOnDestroy;
     protected $metadata;
 
-    public static function create($cacheFilepath)
+    public static function create($cacheFilepath, $saveOnDestroy = true)
     {
         if(self::$instance)
         {
             return self::$instance;
         }
 
-        return self::$instance = new self($cacheFilepath);
+        return self::$instance = new self($cacheFilepath, $saveOnDestroy);
     }
 
     public static function get()
     {
+        if(! self::$instance)
+        {
+            return static::create(sys_get_temp_dir().'.fresh-file');
+        }
+
         return self::$instance;
     }
 
-    public function __construct($cacheFilepath)
+    public function __construct($cacheFilepath, $saveOnDestroy = true)
     {
         $this->cacheFilepath = $cacheFilepath;
+        $this->saveOnDestroy = $saveOnDestroy;
 
         $dir = pathinfo($this->cacheFilepath, PATHINFO_DIRNAME);
 
@@ -48,6 +55,17 @@ class FreshFile
     }
 
     public function __destruct()
+    {
+        if($this->saveOnDestroy)
+        {
+            $this->writeMetadataFile();
+        }
+    }
+
+    /**
+     * Saves metadata file on filesystem.
+     */
+    public function close()
     {
         $this->writeMetadataFile();
     }

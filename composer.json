@@ -5,7 +5,7 @@
     "keywords": ["cache-control", "fresh", "filemtime", "filesystem", "file-system", "file-manager", "filemanager"],
     "homepage": "https://github.com/requtize/fresh-file",
     "license": "MIT",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "authors": [
         {
             "name": "Adam Banaszkiewicz",

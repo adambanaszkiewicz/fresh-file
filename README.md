@@ -20,6 +20,23 @@ $ff = FreshFile::get();
 ```
 In first solution You must pass this object anywhere You want use it. In second solution You have to create object one time, and You can use it anywhere You want without passing it as argument.
 
+### Prevent save cache on object destroy
+
+FreshFile saves metadata file when FreshFile object destroy (when PHP script/request ends), by default. But in some cases You may need to prevent this. Maybe there was some error in Your code and You won't save the current collested data in cache? To do this, pass the second argument as ***false*** to prevent this. From now, You must manually close the FreshFile and save the metadata collected in the request by using **close()** method.
+
+```php
+// Prevent default save on destroy object
+$ff = new FreshFile($cacheFilepath, false);
+$ff = FreshFile::create($cacheFilepath, false);
+
+// ...some code...
+
+// At the end, close the FreshFile and save metadata
+$ff->close()
+```
+
+Remember to always close the FreshFile object after Your script ends!
+
 ### Use case
 
 You can check one or many files at one time. If You pass array of filepaths, and any of files will not be fresh (even 1 from 100), method returns true - which means file is fresh and some operations with this file need to be done.
