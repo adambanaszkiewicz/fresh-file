@@ -4,10 +4,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * Copyright (c) 2017 by Adam Banaszkiewicz
+ * Copyright (c) 2017 - 2018 by Adam Banaszkiewicz
  *
  * @license   MIT License
- * @copyright Copyright (c) 2017, Adam Banaszkiewicz
+ * @copyright Copyright (c) 2017 - 2018, Adam Banaszkiewicz
  * @link      https://github.com/requtize/fresh-file
  */
 
@@ -43,22 +43,24 @@ class FreshFile
         return self::$instance;
     }
 
-    public function __construct($cacheFilepath, $saveOnDestroy = true)
+    public function __construct($cacheFilepath, bool $saveOnDestroy = true)
     {
-        $this->cacheFilepath = $cacheFilepath;
-        $this->saveOnDestroy = $saveOnDestroy;
+        $this->setCacheFilepath($cacheFilepath);
+        $this->setSaveOnDestroy($saveOnDestroy);
 
         $dir = pathinfo($this->cacheFilepath, PATHINFO_DIRNAME);
 
         if(is_dir($dir) === false)
+        {
             mkdir($dir, 0777, true);
+        }
     }
 
     public function __destruct()
     {
         if($this->saveOnDestroy)
         {
-            $this->writeMetadataFile();
+            $this->close();
         }
     }
 
@@ -68,6 +70,16 @@ class FreshFile
     public function close()
     {
         $this->writeMetadataFile();
+    }
+
+    /**
+     * Saves metadata file on filesystem.
+     */
+    public function setSaveOnDestroy(bool $bool)
+    {
+        $this->saveOnDestroy = $bool;
+
+        return $this;
     }
 
     /**
@@ -201,19 +213,34 @@ class FreshFile
         return $this->cacheFilepath;
     }
 
+    /**
+     * Set filepath to metadata file.
+     * @param string $filepath
+     */
+    public function setCacheFilepath($filepath)
+    {
+        $this->cacheFilepath = $filepath;
+
+        return $this;
+    }
+
     public function writeMetadataFile()
     {
         if(is_array($this->metadata))
         {
             file_put_contents($this->getCacheFilepath(), serialize($this->metadata));
         }
+
+        return $this;
     }
 
-    protected function readMetadataFile()
+    public function readMetadataFile()
     {
         if($this->metadata === null && is_file($this->getCacheFilepath()))
         {
             $this->metadata = unserialize(file_get_contents($this->getCacheFilepath()));
         }
+
+        return $this;
     }
 }

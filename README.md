@@ -1,5 +1,5 @@
 # FreshFile
-Simple, fast, standalone PHP lib, that helps You to define, if any of your files were modified since last time You check - Is this file FRESH?
+Simple, fast, standalone PHP library, that helps You to define, if any of your files were modified since last time You check - Is this file FRESH?
 
 Script uses **filemtime()** function (with optional **clearstatcache()**) to get last modification time of file. All modification times are stored in one cache file (if You use multiple instances, multiple files will be created), so even when you use this library for houndreds of files, it will store their times in one file, and read&write of cache file will be done one time per request.
 
@@ -22,7 +22,7 @@ In first solution You must pass this object anywhere You want use it. In second 
 
 ### Prevent save cache on object destroy
 
-FreshFile saves metadata file when FreshFile object destroy (when PHP script/request ends), by default. But in some cases You may need to prevent this. Maybe there was some error in Your code and You won't save the current collested data in cache? To do this, pass the second argument as ***false*** to prevent this. From now, You must manually close the FreshFile and save the metadata collected in the request by using **close()** method.
+FreshFile saves metadata file when FreshFile object destroy (when PHP script/request ends), by default. But in some cases You may need to prevent this. Maybe there was some error in Your code and You won't save the current collected data in cache? To do this, pass the second argument as ***false*** to prevent this. From now, You must manually close the FreshFile and save the metadata collected in the request by using **close()** method.
 
 ```php
 // Prevent default save on destroy object
@@ -32,10 +32,11 @@ $ff = FreshFile::create($cacheFilepath, false);
 // ...some code...
 
 // At the end, close the FreshFile and save metadata
-$ff->close()
+$ff->close();
 ```
 
-Remember to always close the FreshFile object after Your script ends!
+##### Remember!
+If You have prevented save on destroy, You must always close the FreshFile object after Your script ends!
 
 ### Use case
 

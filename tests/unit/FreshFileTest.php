@@ -18,13 +18,13 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $imaginaryFile = $this->getImaginaryFilepath();
         $ff = new FreshFile($this->getCacheFilepath());
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
 
         file_put_contents($ff->getCacheFilepath(), serialize($this->getImaginaryFileMetadata()));
 
         $this->assertEquals('11111', $ff->getFilemtimeMetadata($imaginaryFile));
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
     }
 
     public function testWriteFileMetadata()
@@ -32,7 +32,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $imaginaryFile = $this->getImaginaryFilepath();
         $ff = new FreshFile($this->getCacheFilepath());
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
 
         file_put_contents($ff->getCacheFilepath(), serialize($this->getImaginaryFileMetadata()));
         file_put_contents($imaginaryFile, 'test');
@@ -45,7 +45,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals('11111', $ff->getFilemtimeMetadata($imaginaryFile));
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
         unlink($imaginaryFile);
     }
 
@@ -54,7 +54,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $imaginaryFile = $this->getImaginaryFilepath();
         $ff = new FreshFile($this->getCacheFilepath());
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
 
         file_put_contents($ff->getCacheFilepath(), serialize($this->getImaginaryFileMetadata()));
         file_put_contents($imaginaryFile, 'test');
@@ -70,7 +70,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($mtime, $ff->getFilemtimeCurrent($imaginaryFile));
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
         unlink($imaginaryFile);
     }
 
@@ -79,7 +79,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $imaginaryFile = $this->getImaginaryFilepath();
         $ff = new FreshFile($this->getCacheFilepath());
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
 
         file_put_contents($ff->getCacheFilepath(), serialize($this->getImaginaryFileMetadata()));
         file_put_contents($imaginaryFile, 'test');
@@ -96,7 +96,7 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($ff->isFresh($imaginaryFile));
         $this->assertFalse($ff->isFresh($imaginaryFile));
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
         unlink($imaginaryFile);
     }
 
@@ -139,8 +139,52 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
             if(is_file($file))
                 unlink($file);
 
-        $this->unlinkCacheFile($ff);
+        $this->unlinkCacheFile();
         unlink($imaginaryFile);
+    }
+
+    public function testSaveOnDestroy()
+    {
+        $this->unlinkCacheFile();
+        $this->assertFalse($this->cacheFileExists());
+
+        $imaginaryFile = $this->getImaginaryFilepath();
+        $ff = new FreshFile($this->getCacheFilepath());
+        file_put_contents($imaginaryFile, 'test');
+
+        // Force refresh metadata.
+        $ff->isFresh($imaginaryFile);
+
+        $this->assertFalse($this->cacheFileExists());
+        unset($ff);
+        $this->assertTrue($this->cacheFileExists());
+
+        $this->unlinkCacheFile();
+        unlink($imaginaryFile);
+
+        $this->assertFalse($this->cacheFileExists());
+    }
+
+    public function testPreventSaveOnDestroy()
+    {
+        $this->unlinkCacheFile();
+        $this->assertFalse($this->cacheFileExists());
+
+        $imaginaryFile = $this->getImaginaryFilepath();
+        $ff = new FreshFile($this->getCacheFilepath(), false);
+        file_put_contents($imaginaryFile, 'test');
+
+        // Force refresh metadata.
+        $ff->isFresh($imaginaryFile);
+
+        $this->assertFalse($this->cacheFileExists());
+        unset($ff);
+        $this->assertFalse($this->cacheFileExists());
+
+        $this->unlinkCacheFile();
+        unlink($imaginaryFile);
+
+        $this->assertFalse($this->cacheFileExists());
     }
 
     protected function getCacheFilepath()
@@ -161,10 +205,15 @@ class FreshFileTest extends PHPUnit_Framework_TestCase
         ]];
     }
 
-    protected function unlinkCacheFile(FreshFile $ff)
+    protected function cacheFileExists()
     {
-        if(is_file($ff->getCacheFilepath()))
-            unlink($ff->getCacheFilepath());
+        clearstatcache();
+
+        return is_file($this->getCacheFilepath());
+    }
+
+    protected function unlinkCacheFile()
+    {
         if(is_file($this->getCacheFilepath()))
             unlink($this->getCacheFilepath());
     }
