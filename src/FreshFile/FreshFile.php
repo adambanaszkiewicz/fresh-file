@@ -228,6 +228,13 @@ class FreshFile
     {
         if(is_array($this->metadata))
         {
+            $directory = pathinfo($this->getCacheFilepath(), PATHINFO_DIRNAME);
+
+            if(is_dir($directory) === false)
+            {
+                mkdir($directory, 0777, true);
+            }
+
             file_put_contents($this->getCacheFilepath(), serialize($this->metadata));
         }
 
