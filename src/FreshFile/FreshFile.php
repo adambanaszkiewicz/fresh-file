@@ -245,7 +245,7 @@ class FreshFile
     {
         if($this->metadata === null && is_file($this->getCacheFilepath()))
         {
-            $this->metadata = unserialize(file_get_contents($this->getCacheFilepath()));
+            $this->metadata = (array) @ unserialize(file_get_contents($this->getCacheFilepath()));
         }
 
         return $this;
